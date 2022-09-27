@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>canvasImage</title>
+		<link rel="stylesheet" href="./index.css" />
+	</head>
+	<body>
+		<div class="container">
+			<video id="video" autoplay muted loop width="600px" height="300px" src="./video.mp4"></video>
+			<canvas id="cvs"></canvas>
+			<canvas id="cvs2" onclick="video.play()"></canvas>
+		</div>
+		<script>
+			const video = document.getElementById('video')
+			const cvs = document.getElementById('cvs')
+			const cvs2 = document.getElementById('cvs2')
+			const ctx = cvs.getContext('2d')
+			const ctx2 = cvs2.getContext('2d')
+			video.oncanplay = init()
+
+			function init() {
+				cvs.width = cvs2.width = video.offsetWidth
+				cvs.height = cvs2.height = video.offsetHeight
+				const playVideo = () => {
+					requestAnimationFrame(playVideo)
+					const { width, height } = video
+					ctx.drawImage(video, 0, 0, width, height)
+					const data = ctx.getImageData(0, 0, width, height).data // 拿到像素数据
+					ctx2.clearRect(0, 0, width, height) // 清空第二个画布的位置
+					const blur = 3 // 模糊倍数
+					for (let i = 0; i < data.length; i += 4 * blur) {
+						const x = parseInt(((i + 1) % (width * 4)) / 4)
+						const y = parseInt(i / (width * 4))
+						if (x % blur === 0 && y % blur === 0) {
+							const g = parseInt(data[i] + data[i + 1] + data[i + 2]) / 1.5
+							ctx2.font = '12px serif'
+							ctx2.fillStyle = `rgba(${g}, ${g}, ${g}, ${data[i + 3] / 4})`
+							ctx2.fillText('0', x, y)
+						}
+					}
+				}
+				playVideo()
+			}
+		</script>
+	</body>
+</html>
